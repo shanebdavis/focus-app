@@ -7041,10 +7041,10 @@ eval("/* WEBPACK VAR INJECTION */(function(module) {\nlet Caf = __webpack_requir
 /*!**********************!*\
   !*** ./package.json ***!
   \**********************/
-/*! exports provided: author, dependencies, description, license, name, scripts, default */
+/*! exports provided: author, dependencies, description, license, name, scripts, version, default */
 /***/ (function(module) {
 
-eval("module.exports = {\"author\":\"Shane Brinkman-Davis Delamore, Imikimi LLC\",\"dependencies\":{\"art-build-configurator\":\"*\",\"art-suite-clientApp\":\"git://github.com/imikimi/art-suite-clientApp\"},\"description\":\"Focus.App\",\"license\":\"ISC\",\"name\":\"focus-app\",\"scripts\":{\"build\":\"echo \\\"Building js...\\\"\\nwebpack\\necho \\\"Building manifest...\\\"\\ncaf generateManifest.caf > docs/needs.manifest\\necho \\\"Build done.\\\"\",\"start\":\"webpack-dev-server --hot --inline --progress\",\"test\":\"webpack-dev-server  --progress\",\"testInBrowser\":\"webpack-dev-server --progress\"}};\n\n//# sourceURL=webpack:///./package.json?");
+eval("module.exports = {\"author\":\"Shane Brinkman-Davis Delamore, Imikimi LLC\",\"dependencies\":{\"art-build-configurator\":\"*\",\"art-suite-clientApp\":\"git://github.com/imikimi/art-suite-clientApp\"},\"description\":\"Focus.App\",\"license\":\"ISC\",\"name\":\"focus-app\",\"scripts\":{\"build\":\"echo \\\"Building js...\\\"\\nwebpack\\necho \\\"Building manifest...\\\"\\ncaf generateManifest.caf > docs/needs.manifest\\necho \\\"Build done.\\\"\",\"start\":\"webpack-dev-server --hot --inline --progress\",\"test\":\"webpack-dev-server  --progress\",\"testInBrowser\":\"webpack-dev-server --progress\"},\"version\":\"0.1.0\"};\n\n//# sourceURL=webpack:///./package.json?");
 
 /***/ }),
 
