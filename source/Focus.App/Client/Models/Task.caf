@@ -8,7 +8,7 @@ class Task extends ApplicationState
 
   @stateFields
     root:
-      text: "" This is my all-encompasing goal
+      text: "" My all-encompassing goal
       subtasks: []
 
   updateTask: (id, props) ->
