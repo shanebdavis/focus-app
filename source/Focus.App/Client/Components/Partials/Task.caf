@@ -82,7 +82,7 @@ class Task extends FluxComponent
     timeout 10, @refs?.textInput?.element?.focus()
 
   preprocessState: (state) ->
-    if state.task && !present state.task.text
+    if state.task && @props.taskId != :root && !present state.task.text
       merge super, editingText: true
     else
       super
@@ -170,8 +170,8 @@ class Task extends FluxComponent
                 unless present text
                   @models.task.clearUnusedSubtasks()
                 @clearEditingText()
-              pointerClick: ->
-                @refs.textInput.element.focus()
+              pointerClick: @focusInput
+
             :textCursor
             padding: gridSize * 2
             TextInputElement
@@ -190,7 +190,11 @@ class Task extends FluxComponent
                 # hch:  1
                 # max:  hh: 1
               type:   :textarea
-              placeholder: "(set your sub-goal here)"
+              placeholder:
+                if @taskId == :root
+                  "#1 goal"
+                else
+                  "sub-goal"
               value:  text
               on: {}
                 enter: @clearEditingText
