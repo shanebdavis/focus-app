@@ -1,0 +1,51 @@
+import &StandardImport
+
+maxSubtasks = 3
+
+class Task extends ApplicationState
+
+  @persistant()
+
+  @stateFields
+    root:
+      text: "" This is my all-encompasing goal
+
+  updateTask: (id, props) ->
+    @setState
+      id
+      merge @state[id], props
+
+  _removeTask: (id) ->
+    log _removeTask: id, task: @state[id]
+    if @state[id] extract? parentTaskId
+      @setState id, null
+      @updateTask
+        parentTaskId
+        subtasks: arrayWithoutValue @state[parentTaskId].subtasks, id
+
+  complete: (id) ->
+    log complete: id
+    @_removeTask id
+
+  abandon: (id) ->
+    log abandon: id
+    @_removeTask id
+
+  newSubtask: (parentTaskId) ->
+    newSubtaskId = cryptoRandomString 10
+
+    unless parentTask = @state[parentTaskId]
+      throw new Error "invalid parentTaskId: #{parentTaskId}"
+
+    unless !parentTask.subtasks || parentTask.subtasks.length < maxSubtasks
+      throw new Error "invalid parentTask already has too many subtasks: #{parentTask.subtasks.length}"
+
+    @setState log
+      [parentTaskId]: merge
+        parentTask
+        subtasks: compactFlattenAll parentTask.subtasks, newSubtaskId
+      [newSubtaskId]: {}
+        parentTaskId
+        text: ''
+
+    newSubtaskId

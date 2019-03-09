@@ -1,0 +1,235 @@
+import &StandardImport
+
+class Task extends FluxComponent
+  @subscriptions
+    :appKitViewState.gridSize
+    :task
+
+  @propFields :taskId
+
+  @stateFields
+    editingText: false
+    axisXOffset: 0
+    tracking:    false
+    absoluteXOffset: 0
+    swipeWillActivate: 0
+    swipeWillActivateDirection: null
+
+  swipeLeft: ->
+    @models.task.complete @taskId
+
+  swipeRight: ->
+    @models.task.abandon @taskId
+
+  @getter
+    handlers: ->
+      swipeDistanceThreshold = 100
+      @_handlers ?= createGestureRecognizer
+        flick: ({props:{flickDirection}}) ->
+          switch flickDirection
+          when :right then @swipeRight()
+          when :left  then @swipeLeft()
+
+        horizontal:
+          begin: (e) ->
+          move:  (e) ->
+            @tracking = true
+            # timeout 100, -> @tracking = false
+            @absoluteXOffset = x = e.totalParentDelta.x
+            @axisXOffset = -e.totalParentDelta.x / e.target.currentSize.x
+            @swipeWillActivate = min 1, if x > 0
+              @swipeWillActivateDirection = :left
+              x / swipeDistanceThreshold
+            else
+              @swipeWillActivateDirection = :right
+              -x / swipeDistanceThreshold
+
+          end:   (e) ->
+            switch
+              when @absoluteXOffset < -swipeDistanceThreshold then @swipeLeft()
+              when @absoluteXOffset >  swipeDistanceThreshold then @swipeRight()
+            @axisXOffset = 0
+            @tracking = false
+
+          cancel: (e) ->
+            @axisXOffset = 0
+            @tracking = false
+
+  updateTask: (mergeInTaskProps) ->
+    @models.task.updateTask
+      @taskId
+      mergeInTaskProps
+
+  valueChanged: ({props:{value}}) ->
+    @updateTask text: value
+
+  newSubtask: ->
+    @models.taskNavState.showSubtask
+      @taskId
+      newSubtaskId = @models.task.newSubtask @taskId
+
+  focusInput: -> timeout 10, @refs.textInput.element.focus()
+
+  preprocessState: (state) ->
+    if state.task && !present state.task.text
+      merge super, editingText: true
+    else
+      super
+
+  render: ->
+    @ extract gridSize
+    @task extract?
+      text
+      subtasks
+
+    subtasks ?= []
+    # tasks = []
+    #   "" task 1
+    #   "" task 2
+    #   "" task 3
+
+    MainTextElementType = (if @editingText then TextInputElement else TextElement)
+
+    commonTextProps =
+      switch @props.depth
+      when 1 then TextStyles.xxLargeLightText
+      when 2 then TextStyles.xLargeLightText
+      else TextStyles.largeLightText
+      padding:  @gridSize * 2
+      color:    TextPalette.black.softPrimary
+      :textCenterCenter
+
+      # type: :textarea
+      # text:     text
+      # value:    text
+
+    Element
+      :parentWidthSquare
+
+      if !floatEq0 @axisXOffset
+        TextElement
+          if @swipeWillActivate >= 1
+            TextStyles.largeBoldText
+          else
+            TextStyles.smallBoldText
+          :childrenSize
+          animators:
+            fontSize:
+
+              if @swipeWillActivate >= 1
+                f: :easeInElastic
+                d: .5
+              else
+                f: :easeInQuad
+            opacity: toFrom: 0
+
+          color: TextPalette.white.primary
+          # opacity: @swipeWillActivate
+
+          text:
+            switch @swipeWillActivateDirection
+            when :left then :abandon
+            when :right then :complete
+
+          switch @swipeWillActivateDirection
+          when :left  then :topLeft
+          when :right then :topRight
+
+      Element
+        :column
+        :bottomCenter
+        :cacheDraw
+
+        draw:
+          radius:     5
+          color:      :white
+
+        animators:
+          opacity:
+            toFrom:   0
+            duration: 1
+
+          # scale:
+          #   duration: 1
+          #   toFrom:   .5
+          axis: !@tracking
+          angle: !@tracking
+
+        on: if @props.depth > 1 then @handlers
+
+        # opacity:
+        #   10-@props.depth
+        #   /10
+
+        axis:
+          y: 1
+          x: .5 + @axisXOffset / 2
+        angle: -@axisXOffset / 2# / 200
+
+
+        TextElement
+          TextStyles.largeBoldItalicText
+          color: AppPalette.green
+          padding: gridSize
+          text: "" #{@props.depth}
+          inFlow: false
+
+        if @editingText
+          Element
+            on:
+              blur: @clearEditingText
+              pointerClick: ->
+                @refs.textInput.element.focus()
+            :textCursor
+            TextInputElement
+              commonTextProps
+              size:
+                ww: 1
+                hch: 1
+                max: hh: 1
+              # :centerCenter
+              key: "textInput"
+              maxLength: 60
+              captureWheelEvents: true
+              # size:
+                # ww:   1
+                # hch:  1
+                # max:  hh: 1
+              type:   :textarea
+              placeholder: "(new task)"
+              value:  text
+              on: {}
+                @valueChanged
+                ready: ({target}) -> target.focus()
+        else
+          TextElement
+            commonTextProps
+            :textCursor
+            :parentSize
+            text: text
+            on: pointerClick: ->
+              @triggerEditingText()
+              timeout 10 @focusInput
+
+        Element
+          size: h: 1
+          draw: AppPalette.green
+
+        Element
+          layoutWeight: .5
+          :row
+
+          array i til 3
+            if taskId = subtasks[i]
+              &SubtaskButton {} taskId, parentTaskId: @taskId
+            else if subtasks[i-1] || i == 0
+              TextElement
+                TextStyles.xLargeText
+                :parentSize
+                :textCenterCenter
+                :pointerCursor
+                color: AppPalette.green
+                text:     :+
+                on: pointerClick: @newSubtask
+            else
+              Element()

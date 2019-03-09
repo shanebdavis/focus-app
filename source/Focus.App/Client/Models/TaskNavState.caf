@@ -1,0 +1,36 @@
+import &StandardImport
+&Task
+
+maxSubtasks = 3
+
+class TaskNavState extends FluxSubscriptionsMixin ApplicationState
+
+  @stateFields
+    taskNavStack: [] :root
+
+  showSubtask: (parentTaskId, subtaskId) ->
+    @taskNavStack = compactFlattenAll
+      @taskNavStack.slice
+        0
+        1 + @taskNavStack.indexOf parentTaskId
+      subtaskId
+
+  hideSubtask: (subtaskId) ->
+    if subtaskId in @taskNavStack
+      @taskNavStack =
+        @taskNavStack.slice
+          0
+          @taskNavStack.indexOf subtaskId
+
+  constructor: ->
+    super
+    @subscribe
+      modelName:        :task
+      key:              :task
+      updatesCallback:  ->
+        timeout 10 @_validateTaskNavStack()
+
+  _validateTaskNavStack: ->
+    tasks = @models.task.state
+    if found = find taskId, i in @taskNavStack when !tasks[taskId] with i
+      @taskNavStack = @taskNavStack.slice 0, found

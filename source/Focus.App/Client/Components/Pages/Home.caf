@@ -1,0 +1,29 @@
+import &StandardImport
+
+class Home extends FluxComponent
+  @subscriptions
+    :appKitViewState.appKitViewState
+    :taskNavState.taskNavStack
+
+  showSubtask: (parentTaskId, subtaskId) ->
+    log showSubtask: {} parentTaskId, subtaskId
+
+  render: ->
+    @appKitViewState extract gridSize, phoneWidth
+    Element
+      draw: AppPalette.green
+      ScrollElement
+        :topCenter
+        :column
+        childrenMargins: gridSize
+        size: w: phoneWidth
+        padding: gridSize
+        array taskId, i in @taskNavStack
+          Element
+            key: i
+            :parentWidthSquare
+            Task {}
+              key: taskId
+              @showSubtask
+              taskId
+              depth: i + 1

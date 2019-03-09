@@ -1,0 +1,5 @@
+import &ArtSuite
+
+class AppPalette extends HotStyleProps
+  @green:  rgbColor(#cde9d6)
+  @blue:   rgbColor(#cde9d6).withHueShift 1/3

@@ -1,0 +1,13 @@
+import &StandardImport
+
+&ImikimiAppKit/Client
+
+&ArtSuiteApp.initArtSuiteClient
+  title:         :Focus.App
+  MainComponent:
+    class CanvasComponent extends Component
+
+      render: ->
+        CanvasElement
+          on: {} models.appKitViewState.ready
+          &Components.App()
