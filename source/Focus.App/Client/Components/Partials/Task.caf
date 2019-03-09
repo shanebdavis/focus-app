@@ -77,7 +77,9 @@ class Task extends FluxComponent
       @taskId
       newSubtaskId = @models.task.newSubtask @taskId
 
-  focusInput: -> timeout 10, @refs?.textInput?.element?.focus()
+  focusInput: ->
+    @refs?.textInput?.element?.focus() # for iOS???
+    timeout 10, @refs?.textInput?.element?.focus()
 
   preprocessState: (state) ->
     if state.task && !present state.task.text

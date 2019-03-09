@@ -27,3 +27,11 @@ class Home extends FluxComponent
         Element
           key: @taskNavStack.length
           :parentWidthSquare
+
+      TextElement
+        TextStyles.tinyText
+        :bottomRight
+        :childrenSize
+        color: TextPalette.black.tertiary
+        padding: 4
+        text: &package.version
