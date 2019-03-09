@@ -6,3 +6,4 @@ module.exports
 .addModules
   Task:         require './Task'        
   TaskNavState: require './TaskNavState'
+  ViewState:    require './ViewState'   

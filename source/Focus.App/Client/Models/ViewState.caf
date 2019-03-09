@@ -1,0 +1,14 @@
+import &StandardImport
+
+class ViewState extends ApplicationState
+
+  @stateFields
+    gridSize: 15
+    viewSize: point1
+
+  update: (viewSize) ->
+    @setState {}
+      viewSize
+
+  # Use as "on: {} @models.viewState.ready" handler
+  ready: ({target:{currentSize}}) -> @update currentSize

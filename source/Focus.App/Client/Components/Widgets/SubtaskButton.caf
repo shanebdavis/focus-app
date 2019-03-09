@@ -1,18 +1,29 @@
 import &StandardImport
 
-class SubtaskButton extends PointerActionsMixin FluxComponent
+class SubtaskButton extends FluxComponent
   @subscriptions
     :appKitViewState.gridSize
     :task
+    :taskNavState.taskNavStack
 
   @propFields
     :taskId
     :parentTaskId
 
+  @getter
+    selected: -> @taskNavStack && @taskId in @taskNavStack
+
   action: ->
-    @models.taskNavState.showSubtask
-      @parentTaskId
-      @taskId
+    if @selected
+      @models.taskNavState.hideSubtask
+        @taskId
+    else
+      @models.taskNavState.showSubtask
+        @parentTaskId
+        @taskId
+
+
+    @models.task.clearUnusedSubtasks @taskId
 
   render: ->
     @task extract?
@@ -21,15 +32,8 @@ class SubtaskButton extends PointerActionsMixin FluxComponent
 
     haveText = present text
 
-    Element
-      on: @buttonHandlers
-      if @hover
-        draw:
-          padding: r = @gridSize / 2
-          radius: r
-          outline:
-            color: AppPalette.green
-            lineWidth: 2
+    &ButtonWrapper
+      {} @selected, @action
 
       TextElement
         TextStyles.mediumLightText
@@ -39,11 +43,9 @@ class SubtaskButton extends PointerActionsMixin FluxComponent
         padding: @gridSize / 2
         color:
           if haveText
-            TextPalette.black.softPrimary
-          else
-            TextPalette.black.tertiary
+                TextPalette.black.softPrimary
+          else  TextPalette.black.tertiary
         text:
           if haveText
-            text
-          else
-            "(new task)"
+                text
+          else  "(new task)"

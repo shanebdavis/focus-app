@@ -11,14 +11,15 @@ class Task extends FluxComponent
     editingText: false
     axisXOffset: 0
     tracking:    false
+    falling:    false
     absoluteXOffset: 0
     swipeWillActivate: 0
     swipeWillActivateDirection: null
 
-  swipeLeft: ->
+  swipeRight: ->
     @models.task.complete @taskId
 
-  swipeRight: ->
+  swipeLeft: ->
     @models.task.abandon @taskId
 
   @getter
@@ -45,11 +46,16 @@ class Task extends FluxComponent
               -x / swipeDistanceThreshold
 
           end:   (e) ->
+            activate = false
             switch
-              when @absoluteXOffset < -swipeDistanceThreshold then @swipeLeft()
-              when @absoluteXOffset >  swipeDistanceThreshold then @swipeRight()
-            @axisXOffset = 0
-            @tracking = false
+              when @absoluteXOffset < -swipeDistanceThreshold then activate = true;@swipeLeft()
+              when @absoluteXOffset >  swipeDistanceThreshold then activate = true;@swipeRight()
+            if activate
+              @axisXOffset *= 2
+              @falling = true
+            else
+              @axisXOffset = 0
+              @tracking = false
 
           cancel: (e) ->
             @axisXOffset = 0
@@ -61,14 +67,14 @@ class Task extends FluxComponent
       mergeInTaskProps
 
   valueChanged: ({props:{value}}) ->
-    @updateTask text: value
+    @updateTask text: value.trim()
 
   newSubtask: ->
     @models.taskNavState.showSubtask
       @taskId
       newSubtaskId = @models.task.newSubtask @taskId
 
-  focusInput: -> timeout 10, @refs.textInput.element.focus()
+  focusInput: -> timeout 10, @refs?.textInput?.element?.focus()
 
   preprocessState: (state) ->
     if state.task && !present state.task.text
@@ -83,10 +89,6 @@ class Task extends FluxComponent
       subtasks
 
     subtasks ?= []
-    # tasks = []
-    #   "" task 1
-    #   "" task 2
-    #   "" task 3
 
     MainTextElementType = (if @editingText then TextInputElement else TextElement)
 
@@ -99,41 +101,20 @@ class Task extends FluxComponent
       color:    TextPalette.black.softPrimary
       :textCenterCenter
 
-      # type: :textarea
-      # text:     text
-      # value:    text
-
     Element
       :parentWidthSquare
 
-      if !floatEq0 @axisXOffset
-        TextElement
-          if @swipeWillActivate >= 1
-            TextStyles.largeBoldText
-          else
-            TextStyles.smallBoldText
-          :childrenSize
-          animators:
-            fontSize:
+      animators:
+        opacity:
+          d: .5
+          f: :easeOutQuart
+          toFrom: 0
 
-              if @swipeWillActivate >= 1
-                f: :easeInElastic
-                d: .5
-              else
-                f: :easeInQuad
-            opacity: toFrom: 0
+        location:
+          f: :easeOutQuad
+          d: .5
+          to: yh: 1
 
-          color: TextPalette.white.primary
-          # opacity: @swipeWillActivate
-
-          text:
-            switch @swipeWillActivateDirection
-            when :left then :abandon
-            when :right then :complete
-
-          switch @swipeWillActivateDirection
-          when :left  then :topLeft
-          when :right then :topRight
 
       Element
         :column
@@ -149,17 +130,20 @@ class Task extends FluxComponent
             toFrom:   0
             duration: 1
 
-          # scale:
-          #   duration: 1
-          #   toFrom:   .5
-          axis: !@tracking
-          angle: !@tracking
+          axis:
+            if @falling
+              f: :easeOutQuad
+              d: .5
+            else
+              !@tracking
+          angle:
+            if @falling
+              f: :easeOutQuad
+              d: .5
+            else
+              !@tracking
 
         on: if @props.depth > 1 then @handlers
-
-        # opacity:
-        #   10-@props.depth
-        #   /10
 
         axis:
           y: 1
@@ -177,7 +161,10 @@ class Task extends FluxComponent
         if @editingText
           Element
             on:
-              blur: @clearEditingText
+              blur: ->
+                unless present text
+                  @models.task.clearUnusedSubtasks()
+                @clearEditingText()
               pointerClick: ->
                 @refs.textInput.element.focus()
             :textCursor
@@ -199,8 +186,30 @@ class Task extends FluxComponent
               placeholder: "(new task)"
               value:  text
               on: {}
+                enter: @clearEditingText
                 @valueChanged
-                ready: ({target}) -> target.focus()
+                ready: ({target}) ->
+                  timeout 10 ->
+                    target.focus()
+            Element
+              :bottomRight
+              size:
+                h: @gridSize * 3
+                ww: 1/3
+
+              draw:
+                radius: 100
+                padding: @gridSize / 2
+                AppPalette.green
+
+              ButtonWrapper
+                action: @clearEditingText
+                TextElement
+                  TextStyles.mediumBoldText
+                  color: TextPalette.white.primary
+                  :parentSize
+                  :textCenterCenter
+                  text: "done"
         else
           TextElement
             commonTextProps
@@ -221,15 +230,45 @@ class Task extends FluxComponent
 
           array i til 3
             if taskId = subtasks[i]
-              &SubtaskButton {} taskId, parentTaskId: @taskId
-            else if subtasks[i-1] || i == 0
-              TextElement
-                TextStyles.xLargeText
-                :parentSize
-                :textCenterCenter
-                :pointerCursor
-                color: AppPalette.green
-                text:     :+
-                on: pointerClick: @newSubtask
+              SubtaskButton {} taskId, parentTaskId: @taskId
             else
-              Element()
+              NewSubtaskButton {} @taskId
+
+      if !floatEq0 @axisXOffset
+        Element
+          :centerCenter
+          :childrenSize
+          draw:
+            radius: 100
+            if @swipeWillActivate >= 1
+              AppPalette.green
+            else
+              AppPalette.grey
+          key: :actionMessage
+          padding: @gridSize
+          animators:
+            :draw
+            scale:
+              if @swipeWillActivate >= 1
+                f: :easeInElastic
+                d: .5
+              else
+                f: :easeInQuad
+            opacity: toFrom: 0
+          scale:
+            if @swipeWillActivate >= 1
+              2
+            else
+              1 + .5 * @swipeWillActivate
+
+          TextElement
+            TextStyles.smallBoldText
+            :childrenSize
+
+            color: TextPalette.white.primary
+            # opacity: @swipeWillActivate
+
+            text:
+              switch @swipeWillActivateDirection
+              when :right then :abandon
+              when :left  then :complete

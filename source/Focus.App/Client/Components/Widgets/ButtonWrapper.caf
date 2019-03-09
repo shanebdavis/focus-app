@@ -1,0 +1,20 @@
+import &StandardImport
+
+class ButtonWrapper extends PointerActionsMixin FluxComponent
+  @subscriptions
+    :appKitViewState.gridSize
+
+  render: ->
+    Element
+      on: @buttonHandlers
+      draw:
+        padding: r = @gridSize / 2
+        radius: r
+        if @hover
+          outline:
+            color: AppPalette.green
+            lineWidth: 2
+        if @props.selected
+          fill: AppPalette.green.withAlpha .5
+
+      @props.children

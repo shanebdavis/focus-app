@@ -5,13 +5,11 @@ class Home extends FluxComponent
     :appKitViewState.appKitViewState
     :taskNavState.taskNavStack
 
-  showSubtask: (parentTaskId, subtaskId) ->
-    log showSubtask: {} parentTaskId, subtaskId
-
   render: ->
     @appKitViewState extract gridSize, phoneWidth
     Element
       draw: AppPalette.green
+      padding: @appKitViewState.safePadding
       ScrollElement
         :topCenter
         :column
@@ -24,6 +22,8 @@ class Home extends FluxComponent
             :parentWidthSquare
             Task {}
               key: taskId
-              @showSubtask
               taskId
               depth: i + 1
+        Element
+          key: @taskNavStack.length
+          :parentWidthSquare

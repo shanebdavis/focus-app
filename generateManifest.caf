@@ -1,0 +1,8 @@
+import &ArtStandardLib
+log
+  """
+    CACHE MANIFEST
+    # built:    #{formatDate 'yyyy-mm-dd HH:MMtt'}
+    # version:  v#{&package.version}
+
+    index.js

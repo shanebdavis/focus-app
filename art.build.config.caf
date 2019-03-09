@@ -8,10 +8,15 @@ target:
 npm:
   description: "" Focus.App
   dependencies: art-suite-clientApp: :git://github.com/imikimi/art-suite-clientApp
+  scripts:
+    build:
+      """
+        echo "Building js..."
+        webpack
+        echo "Building manifest..."
+        caf generateManifest.caf > docs/needs.manifest
+        echo "Build done."
 
 webpack:
-  # common properties are merged into each target's properties
-  common: mode: :development
-
-  # each target's individual properties
+  common: output: path: "#{__dirname}/docs"
   targets: Client: {}

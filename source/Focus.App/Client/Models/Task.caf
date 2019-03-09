@@ -9,14 +9,27 @@ class Task extends ApplicationState
   @stateFields
     root:
       text: "" This is my all-encompasing goal
+      subtasks: []
 
   updateTask: (id, props) ->
     @setState
       id
       merge @state[id], props
 
+  clearUnusedSubtasks: (exceptId)->
+    newState = object task, taskId in @state when
+      taskId == :root
+      || taskId == exceptId
+      || present task?.text
+
+    each {subtasks}, taskId in newState when subtasks?.length > 0
+      newState[taskId] = merge newState[taskId], subtasks:
+        array subtaskId in subtasks when newState[subtaskId]
+
+    @replaceState newState
+
+
   _removeTask: (id) ->
-    log _removeTask: id, task: @state[id]
     if @state[id] extract? parentTaskId
       @setState id, null
       @updateTask
@@ -24,11 +37,9 @@ class Task extends ApplicationState
         subtasks: arrayWithoutValue @state[parentTaskId].subtasks, id
 
   complete: (id) ->
-    log complete: id
     @_removeTask id
 
   abandon: (id) ->
-    log abandon: id
     @_removeTask id
 
   newSubtask: (parentTaskId) ->
@@ -40,7 +51,7 @@ class Task extends ApplicationState
     unless !parentTask.subtasks || parentTask.subtasks.length < maxSubtasks
       throw new Error "invalid parentTask already has too many subtasks: #{parentTask.subtasks.length}"
 
-    @setState log
+    @setState
       [parentTaskId]: merge
         parentTask
         subtasks: compactFlattenAll parentTask.subtasks, newSubtaskId

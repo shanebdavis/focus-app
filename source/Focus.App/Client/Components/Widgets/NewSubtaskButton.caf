@@ -1,0 +1,21 @@
+import &StandardImport
+
+class NewSubtaskButton extends FluxComponent
+
+  @propFields :taskId
+
+  action: ->
+    @models.taskNavState.showSubtask
+      @taskId
+      @models.task.newSubtask @taskId
+
+  render: ->
+    &ButtonWrapper
+      {} @action
+      TextElement
+        TextStyles.xLargeText
+        :parentSize
+        :textCenterCenter
+        :pointerCursor
+        color:  AppPalette.green
+        text:   :+
