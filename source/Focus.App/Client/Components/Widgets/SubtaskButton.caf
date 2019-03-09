@@ -48,4 +48,4 @@ class SubtaskButton extends FluxComponent
         text:
           if haveText
                 text
-          else  "(new task)"
+          else  "(set your sub-goal here)"

@@ -55,11 +55,11 @@ class Task extends FluxComponent
               @falling = true
             else
               @axisXOffset = 0
-              @tracking = false
+
+          finally: @clearTracking
 
           cancel: (e) ->
             @axisXOffset = 0
-            @tracking = false
 
   updateTask: (mergeInTaskProps) ->
     @models.task.updateTask
@@ -67,7 +67,10 @@ class Task extends FluxComponent
       mergeInTaskProps
 
   valueChanged: ({props:{value}}) ->
-    @updateTask text: value.trim()
+    @updateTask
+      text:
+        value.trim()
+        .replace /[\n\s]+/g, ' '
 
   newSubtask: ->
     @models.taskNavState.showSubtask
@@ -83,7 +86,7 @@ class Task extends FluxComponent
       super
 
   render: ->
-    @ extract gridSize
+    @ extract gridSize, tracking
     @task extract?
       text
       subtasks
@@ -135,13 +138,13 @@ class Task extends FluxComponent
               f: :easeOutQuad
               d: .5
             else
-              !@tracking
+              !tracking
           angle:
             if @falling
               f: :easeOutQuad
               d: .5
             else
-              !@tracking
+              !tracking
 
         on: if @props.depth > 1 then @handlers
 
@@ -168,22 +171,24 @@ class Task extends FluxComponent
               pointerClick: ->
                 @refs.textInput.element.focus()
             :textCursor
+            padding: gridSize * 2
             TextInputElement
               commonTextProps
               size:
-                ww: 1
-                hch: 1
-                max: hh: 1
-              # :centerCenter
-              key: "textInput"
-              maxLength: 60
+                ww:   1
+                hch:  1
+                max:  hh: 1
+              :centerCenter
+              key:        "textInput"
+              maxLength:  60
+              padding:    0
               captureWheelEvents: true
               # size:
                 # ww:   1
                 # hch:  1
                 # max:  hh: 1
               type:   :textarea
-              placeholder: "(new task)"
+              placeholder: "(set your sub-goal here)"
               value:  text
               on: {}
                 enter: @clearEditingText
@@ -191,25 +196,26 @@ class Task extends FluxComponent
                 ready: ({target}) ->
                   timeout 10 ->
                     target.focus()
-            Element
-              :bottomRight
-              size:
-                h: @gridSize * 3
-                ww: 1/3
 
-              draw:
-                radius: 100
-                padding: @gridSize / 2
-                AppPalette.green
+            # Element
+            #   :bottomRight
+            #   size:
+            #     h: @gridSize * 3
+            #     ww: 1/3
 
-              ButtonWrapper
-                action: @clearEditingText
-                TextElement
-                  TextStyles.mediumBoldText
-                  color: TextPalette.white.primary
-                  :parentSize
-                  :textCenterCenter
-                  text: "done"
+            #   draw:
+            #     radius: 100
+            #     padding: @gridSize / 2
+            #     AppPalette.green
+
+            #   ButtonWrapper
+            #     action: @clearEditingText
+            #     TextElement
+            #       TextStyles.mediumBoldText
+            #       color: TextPalette.white.primary
+            #       :parentSize
+            #       :textCenterCenter
+            #       text: "done"
         else
           TextElement
             commonTextProps
