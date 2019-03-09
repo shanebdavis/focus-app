@@ -1,6 +1,6 @@
 import &StandardImport
 
-&ImikimiAppKit/Client
+&ArtAppKit/Client
 
 &ArtSuiteApp.initArtSuiteClient
   title:         :Focus.App
