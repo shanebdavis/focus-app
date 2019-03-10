@@ -13,8 +13,12 @@ SubtasksFactory = class Subtasks extends FluxComponent
 
   @getter
     selectedSubtaskId: ->
-      @state.selectedSubtaskId
-      ? @task?.subtasks?[0]
+      @state extract task, selectedSubtaskId
+      if task?.subtasks
+        if selectedSubtaskId && !(selectedSubtaskId in task.subtasks)
+          selectedSubtaskId = @selectedSubtaskId = null
+
+        selectedSubtaskId ? task.subtasks[0]
 
   updateTask: (mergeInTaskProps) ->
     @models.task.updateTask
@@ -25,6 +29,16 @@ SubtasksFactory = class Subtasks extends FluxComponent
     @models.taskNavState.showSubtask
       @taskId
       @selectedSubtaskId = @models.task.newSubtask @taskId
+
+  selectOrAddTask: (taskId) ->
+    if taskId
+      if @selectedSubtaskId == taskId
+        @toggleShowAllChildren()
+      else
+        @setSelectedSubtaskId taskId
+        @clearShowAllChildren()
+    else
+      @newSubtask()
 
   render: ->
     @ extract gridSize, selectedSubtaskId
@@ -82,24 +96,6 @@ SubtasksFactory = class Subtasks extends FluxComponent
 
                   fill: AppPalette.primary
 
-            if @showAllChildren
-              Element
-                on: pointerClick: @newSubtask
-                size: buttonSize
-                animators: opacity: toFrom: 0
-                :centerRight
-                :pointerCursor
-                draw:
-                  :circle
-                  TextPalette.white.primary
-                TextElement
-                  TextStyles.largeText
-                  :parentSize
-                  :textCenterCenter
-                  text: :+
-                  color: AppPalette.primary
-
-
           Element
             :column
             :parentWidthChildrenHeight
@@ -111,19 +107,23 @@ SubtasksFactory = class Subtasks extends FluxComponent
               size: toFrom: h: 0
             :clip
 
-            array taskId, order in subtasks when
-                @showAllChildren || taskId == selectedSubtaskId
-              JustTask {}
-                key:    taskId
-                taskId: taskId
-                depth:  @props.depth + 1
-                order:  order + 1
-                selected: taskId == selectedSubtaskId
-                select: @setSelectedSubtaskId
-                showOptions: @showAllChildren
-                path: compactFlattenAll
-                  path ? 1
-                  order + 1
+            array order til subtasks.length + 1
+              taskId = subtasks[order]
+              if @showAllChildren || taskId == selectedSubtaskId
+                JustTask {}
+                  key:    taskId
+                  taskId: taskId
+                  depth:
+                    if taskId
+                      @props.depth + 1
+                    else 3
+                  order:  order + 1
+                  selected: taskId == selectedSubtaskId
+                  select: @selectOrAddTask
+                  showOptions: @showAllChildren
+                  path: compactFlattenAll
+                    path ? 1
+                    order + 1
 
           if subtaskId = selectedSubtaskId
             order = 1 + subtasks.indexOf subtaskId
@@ -134,3 +134,12 @@ SubtasksFactory = class Subtasks extends FluxComponent
               path:   compactFlattenAll
                 path ? order
                 order
+
+      else
+        JustTask {}
+          depth:  3
+          order:  order + 1
+          select: @selectOrAddTask
+          path: compactFlattenAll
+            path ? 1
+            1

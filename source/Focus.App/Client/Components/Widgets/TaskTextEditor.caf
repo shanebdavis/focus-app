@@ -25,6 +25,12 @@ class TaskTextEditor extends FluxComponent
     @refs?.textInput?.element?.focus() # for iOS???
     timeout 10, @refs?.textInput?.element?.focus()
 
+  preprocessState: (state) ->
+    if state.task && @props.taskId != :root && !present state.task.text
+      merge super, editingText: true
+    else
+      super
+
   render: ->
     @ extract gridSize
     @props extract tight
@@ -61,7 +67,7 @@ class TaskTextEditor extends FluxComponent
               max:  hh: 1
             :parentWidthChildrenHeight if tight
             :centerCenter unless tight
-            key:        "textInput"
+            key:        :textInput
             maxLength:  60
             padding:    0
             captureWheelEvents: true
@@ -75,9 +81,9 @@ class TaskTextEditor extends FluxComponent
             on: {}
               enter: @clearEditingText
               @valueChanged
-              ready: ({target}) ->
-                timeout 10 ->
-                  target.focus()
+              domElementAttached: ({target}) ->
+                log :focus
+                target.focus()
 
       else
         TextElement

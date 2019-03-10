@@ -8,6 +8,8 @@ class JustTask extends FluxComponent
   delete:  -> @models.task.removeTask  @props.taskId
   promote: -> @models.task.promoteTask @props.taskId
 
+  select: -> @props.select? @props.taskId
+
   render: ->
     @ extract gridSize
     @props extract
@@ -27,16 +29,28 @@ class JustTask extends FluxComponent
       animators:
         size: toFrom: h: 0
 
+      unless taskId
+        cursor: :pointer
+        on: pointerClick: @select
+        opacity: .5
+
 
       Element
         :parentWidthChildrenHeight
-
 
         padding: v: gridSize *
           5 * min 1, 1 - depth / 4
 
         if @task
           &TaskTextEditor {} taskId, depth, tight: true
+
+        else if !taskId
+          TextElement
+            TextStyles.largeBoldText
+            :parentWidthChildrenHeight
+            :textCenterCenter
+            text: :+
+            color: AppPalette.primary
 
       TextElement
         if selected
@@ -48,7 +62,7 @@ class JustTask extends FluxComponent
         animators:
           :fontSize
           :color
-        on: pointerClick: -> @props.select? taskId
+        on: pointerClick: @select
         color:
           if selected
             AppPalette.primary
@@ -62,7 +76,7 @@ class JustTask extends FluxComponent
             "" #{order}
         inFlow: false
 
-      if @props.showOptions
+      if @props.showOptions && taskId
         Element
           :row
           :topRight
