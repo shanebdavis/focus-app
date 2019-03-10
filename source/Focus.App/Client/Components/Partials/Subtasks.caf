@@ -1,0 +1,136 @@
+import &StandardImport
+
+SubtasksFactory = class Subtasks extends FluxComponent
+  @subscriptions
+    :appKitViewState.gridSize
+    :task
+
+  @propFields :taskId
+
+  @stateFields
+    showAllChildren: false
+    selectedSubtaskId: null
+
+  @getter
+    selectedSubtaskId: ->
+      @state.selectedSubtaskId
+      ? @task?.subtasks?[0]
+
+  updateTask: (mergeInTaskProps) ->
+    @models.task.updateTask
+      @taskId
+      mergeInTaskProps
+
+  newSubtask: ->
+    @models.taskNavState.showSubtask
+      @taskId
+      @selectedSubtaskId = @models.task.newSubtask @taskId
+
+  render: ->
+    @ extract gridSize, selectedSubtaskId
+    @props extract
+      order = 1
+      path = [1]
+    @task extract?
+      text
+      subtasks
+
+    subtasks ?= []
+
+    buttonSize = gridSize * 2.5
+
+    Element
+      :parentWidthChildrenHeight
+      :column
+      :clip
+      childrenMargins: gridSize
+      animators:
+        size: toFrom: h: 0
+
+      if subtasks.length > 0
+        []
+          Element
+            size: h: buttonSize
+            Element
+              on: pointerClick: @toggleShowAllChildren
+              size: buttonSize
+              animators: :location :axis
+              if @showAllChildren
+                :centerLeft
+              else
+                :centerCenter
+              draw:
+                :circle
+                TextPalette.white.primary
+              padding: gridSize * .67
+              :pointerCursor
+              Element
+                :centerCenter
+                animators:
+                  :angle
+                angle:
+                  if @showAllChildren
+                    -Math.PI / 2
+                  else 0
+                draw:
+                  shape: (context, s) ->
+                    {top, left, right, bottom, vCenter, hCenter} = s
+                    context.moveTo  hCenter,  bottom * .9
+                    context.lineTo  right,    bottom * .25
+                    context.lineTo  left,     bottom * .25
+                    context.closePath()
+
+                  fill: AppPalette.green
+
+            if @showAllChildren
+              Element
+                on: pointerClick: @newSubtask
+                size: buttonSize
+                animators: opacity: toFrom: 0
+                :centerRight
+                :pointerCursor
+                draw:
+                  :circle
+                  TextPalette.white.primary
+                TextElement
+                  TextStyles.largeText
+                  :parentSize
+                  :textCenterCenter
+                  text: :+
+                  color: AppPalette.green
+
+
+          Element
+            :column
+            :parentWidthChildrenHeight
+            key: :no1Children
+            childrenMargins: 1
+            padding: left: if @showAllChildren then gridSize * 2 else 0
+            animators:
+              :padding
+              size: toFrom: h: 0
+            :clip
+
+            array taskId, order in subtasks when
+                @showAllChildren || taskId == selectedSubtaskId
+              JustTask {}
+                key:    taskId
+                taskId: taskId
+                depth:  @props.depth + 1
+                order:  order + 1
+                selected: taskId == selectedSubtaskId
+                select: @setSelectedSubtaskId
+                showDelete: @showAllChildren
+                path: compactFlattenAll
+                  path ? 1
+                  order + 1
+
+          if subtaskId = selectedSubtaskId
+            order = 1 + subtasks.indexOf subtaskId
+            SubtasksFactory
+              key:    "" subtasks #{subtaskId}
+              depth:  @props.depth + 1
+              taskId: subtaskId
+              path:   compactFlattenAll
+                path ? order
+                order

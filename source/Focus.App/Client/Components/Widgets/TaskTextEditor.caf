@@ -1,0 +1,90 @@
+import &StandardImport
+
+class TaskTextEditor extends FluxComponent
+  @subscriptions
+    :appKitViewState.gridSize
+    :task
+
+  @stateFields
+    editingText: false
+
+  @propFields :taskId
+
+  updateTask: (mergeInTaskProps) ->
+    @models.task.updateTask
+      @taskId
+      mergeInTaskProps
+
+  valueChanged: ({props:{value}}) ->
+    @updateTask
+      text:
+        value.trim()
+        .replace /[\n\s]+/g, ' '
+
+  focusInput: ->
+    @refs?.textInput?.element?.focus() # for iOS???
+    timeout 10, @refs?.textInput?.element?.focus()
+
+  render: ->
+    @ extract gridSize
+    @props extract tight
+    @task extract? text
+
+    commonTextProps =
+      switch @props.depth
+      when 1 then TextStyles.xxLargeLightText
+      when 2 then TextStyles.xLargeLightText
+      else TextStyles.largeLightText
+      padding:  gridSize * 2
+      color:    TextPalette.black.primary
+      :textCenterCenter
+
+    Element
+      :parentWidthChildrenHeight if tight
+      if @editingText
+        Element
+          on:
+            blur: ->
+              unless present text
+                @models.task.clearUnusedSubtasks()
+              @clearEditingText()
+            pointerClick: @focusInput
+
+          :textCursor
+          :parentWidthChildrenHeight if tight
+          padding: gridSize * 2
+          TextInputElement
+            commonTextProps
+            size:
+              ww:   1
+              hch:  1
+              max:  hh: 1
+            :parentWidthChildrenHeight if tight
+            :centerCenter unless tight
+            key:        "textInput"
+            maxLength:  60
+            padding:    0
+            captureWheelEvents: true
+            type:   :textarea
+            placeholder:
+              if @taskId == :root
+                "#1 goal"
+              else
+                "sub-goal"
+            value:  text
+            on: {}
+              enter: @clearEditingText
+              @valueChanged
+              ready: ({target}) ->
+                timeout 10 ->
+                  target.focus()
+
+      else
+        TextElement
+          commonTextProps
+          :textCursor
+          :parentSize unless tight
+          text: text
+          on: pointerClick: ->
+            @triggerEditingText()
+            timeout 10 @focusInput

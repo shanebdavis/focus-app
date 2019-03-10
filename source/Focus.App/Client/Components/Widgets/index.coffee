@@ -5,5 +5,7 @@ module.exports = require './namespace'
 module.exports
 .addModules
   ButtonWrapper:    require './ButtonWrapper'   
+  JustTask:         require './JustTask'        
   NewSubtaskButton: require './NewSubtaskButton'
   SubtaskButton:    require './SubtaskButton'   
+  TaskTextEditor:   require './TaskTextEditor'  

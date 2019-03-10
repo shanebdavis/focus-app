@@ -1,0 +1,79 @@
+import &StandardImport
+
+class JustTask extends FluxComponent
+  @subscriptions
+    :appKitViewState.gridSize
+    :task
+
+  delete: ->
+    @models.task.removeTask @props.taskId
+
+  render: ->
+    @ extract gridSize
+    @props extract
+      order = 1
+      depth
+      taskId
+      selected
+      path
+    @task extract?
+      text
+
+    Element
+      :parentWidthChildrenHeight
+      draw:
+        radius:     5
+        color:      :white
+      animators:
+        size: toFrom: h: 0
+
+
+      Element
+        :parentWidthChildrenHeight
+
+
+        padding: v: gridSize *
+          5 * min 1, 1 - depth / 4
+
+        if @task
+          &TaskTextEditor {} taskId, depth, tight: true
+
+      TextElement
+        if selected
+          TextStyles.largeBoldItalicText
+        else
+          TextStyles.mediumBoldText
+        :childrenSize
+        :pointerCursor
+        animators:
+          :fontSize
+          :color
+        on: pointerClick: -> @props.select? taskId
+        color:
+          if selected
+            AppPalette.green
+          else
+            AppPalette.grey
+        padding: gridSize
+        text:
+          if path
+            path.join '.'
+          else
+            "" #{order}
+        inFlow: false
+
+      if @props.showDelete
+        TextElement
+          TextStyles.mediumBoldText
+          :childrenSize
+          :pointerCursor
+          :topRight
+          key: :deleteButton
+          animators:
+            :fontSize
+            :color
+          on: pointerClick: @delete
+          color: AppPalette.grey
+          padding: gridSize
+          text: "x"
+          inFlow: false

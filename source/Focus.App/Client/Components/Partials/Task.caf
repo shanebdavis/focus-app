@@ -8,19 +8,16 @@ class Task extends FluxComponent
   @propFields :taskId
 
   @stateFields
-    editingText: false
-    axisXOffset: 0
-    tracking:    false
-    falling:    false
-    absoluteXOffset: 0
-    swipeWillActivate: 0
-    swipeWillActivateDirection: null
+    editingText:                  false
+    axisXOffset:                  0
+    tracking:                     false
+    falling:                      false
+    absoluteXOffset:              0
+    swipeWillActivate:            0
+    swipeWillActivateDirection:   null
 
-  swipeRight: ->
-    @models.task.complete @taskId
-
-  swipeLeft: ->
-    @models.task.abandon @taskId
+  swipeRight: -> @models.task.complete @taskId
+  swipeLeft:  -> @models.task.abandon  @taskId
 
   @getter
     handlers: ->
@@ -95,17 +92,6 @@ class Task extends FluxComponent
 
     subtasks ?= []
 
-    MainTextElementType = (if @editingText then TextInputElement else TextElement)
-
-    commonTextProps =
-      switch @props.depth
-      when 1 then TextStyles.xxLargeLightText
-      when 2 then TextStyles.xLargeLightText
-      else TextStyles.largeLightText
-      padding:  @gridSize * 2
-      color:    TextPalette.black.softPrimary
-      :textCenterCenter
-
     Element
       :parentWidthSquare
 
@@ -119,7 +105,6 @@ class Task extends FluxComponent
           f: :easeOutQuad
           d: .5
           to: yh: 1
-
 
       Element
         :column
@@ -163,74 +148,7 @@ class Task extends FluxComponent
           text: "" #{@props.depth}
           inFlow: false
 
-        if @editingText
-          Element
-            on:
-              blur: ->
-                unless present text
-                  @models.task.clearUnusedSubtasks()
-                @clearEditingText()
-              pointerClick: @focusInput
-
-            :textCursor
-            padding: gridSize * 2
-            TextInputElement
-              commonTextProps
-              size:
-                ww:   1
-                hch:  1
-                max:  hh: 1
-              :centerCenter
-              key:        "textInput"
-              maxLength:  60
-              padding:    0
-              captureWheelEvents: true
-              # size:
-                # ww:   1
-                # hch:  1
-                # max:  hh: 1
-              type:   :textarea
-              placeholder:
-                if @taskId == :root
-                  "#1 goal"
-                else
-                  "sub-goal"
-              value:  text
-              on: {}
-                enter: @clearEditingText
-                @valueChanged
-                ready: ({target}) ->
-                  timeout 10 ->
-                    target.focus()
-
-            # Element
-            #   :bottomRight
-            #   size:
-            #     h: @gridSize * 3
-            #     ww: 1/3
-
-            #   draw:
-            #     radius: 100
-            #     padding: @gridSize / 2
-            #     AppPalette.green
-
-            #   ButtonWrapper
-            #     action: @clearEditingText
-            #     TextElement
-            #       TextStyles.mediumBoldText
-            #       color: TextPalette.white.primary
-            #       :parentSize
-            #       :textCenterCenter
-            #       text: "done"
-        else
-          TextElement
-            commonTextProps
-            :textCursor
-            :parentSize
-            text: text
-            on: pointerClick: ->
-              @triggerEditingText()
-              timeout 10 @focusInput
+        TaskTextEditor {} @taskId, @props.depth
 
         Element
           size: h: 1

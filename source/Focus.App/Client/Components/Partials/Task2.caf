@@ -1,0 +1,64 @@
+import &StandardImport
+
+Task2Factory = class Task2 extends FluxComponent
+  @subscriptions
+    :appKitViewState.gridSize
+    :task
+
+  @propFields :taskId
+
+  @stateFields
+    showAllChildren: false
+
+  updateTask: (mergeInTaskProps) ->
+    @models.task.updateTask
+      @taskId
+      mergeInTaskProps
+
+  valueChanged: ({props:{value}}) ->
+    @updateTask
+      text:
+        value.trim()
+        .replace /[\n\s]+/g, ' '
+
+  newSubtask: ->
+    @models.taskNavState.showSubtask
+      @taskId
+      newSubtaskId = @models.task.newSubtask @taskId
+
+  focusInput: ->
+    @refs?.textInput?.element?.focus() # for iOS???
+    timeout 10, @refs?.textInput?.element?.focus()
+
+  preprocessState: (state) ->
+    if state.task && @props.taskId != :root && !present state.task.text
+      merge super, editingText: true
+    else
+      super
+
+  render: ->
+    @ extract gridSize, tracking
+    @props extract
+      order = 1
+    @task extract?
+      text
+      subtasks
+
+    subtasks ?= []
+
+    Element
+      :parentWidthChildrenHeight
+      :column
+      :clip
+      childrenMargins: gridSize
+      animators:
+        size: toFrom: h: 0
+
+      JustTask commonProps = {}
+        @taskId
+        @props.path
+        @props.order
+        @props.depth
+        selected: true
+
+      &Subtasks commonProps

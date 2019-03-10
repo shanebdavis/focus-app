@@ -5,4 +5,6 @@ module.exports = require './namespace'
 module.exports
 .addModules
   StandardImport: require './StandardImport'
+  Subtasks:       require './Subtasks'      
   Task:           require './Task'          
+  Task2:          require './Task2'         

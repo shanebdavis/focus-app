@@ -1,6 +1,6 @@
 import &StandardImport
 
-maxSubtasks = 3
+# maxSubtasks = 3
 
 class Task extends ApplicationState
 
@@ -8,13 +8,26 @@ class Task extends ApplicationState
 
   @stateFields
     root:
-      text: "" (set your all-encompassing goal here)
+      text: "" (set your #1 goal here)
       subtasks: []
 
   updateTask: (id, props) ->
     @setState
       id
       merge @state[id], props
+
+  addTestDataChildren: (parentId, depth) ->
+    depth ?= 2
+    log "addTestDataChildren #{parentId}, #{depth}"
+    if depth <= 4
+      each i til 2 + intRand 2
+        @addTestDataChildren
+          @newSubtask parentId, "L#{depth}##{i+1}"
+          depth + 1
+
+  setTestData: ->
+    @resetState()
+    @addTestDataChildren :root
 
   clearUnusedSubtasks: (exceptId)->
     newState = object task, taskId in @state when
@@ -28,28 +41,22 @@ class Task extends ApplicationState
 
     @replaceState newState
 
-
-  _removeTask: (id) ->
+  removeTask: (id) ->
     if @state[id] extract? parentTaskId
       @setState id, null
       @updateTask
         parentTaskId
         subtasks: arrayWithoutValue @state[parentTaskId].subtasks, id
 
-  complete: (id) ->
-    @_removeTask id
-
-  abandon: (id) ->
-    @_removeTask id
-
-  newSubtask: (parentTaskId) ->
+  newSubtask: (parentTaskId, initialText) ->
     newSubtaskId = cryptoRandomString 10
+    initialText ?= ''
 
     unless parentTask = @state[parentTaskId]
       throw new Error "invalid parentTaskId: #{parentTaskId}"
 
-    unless !parentTask.subtasks || parentTask.subtasks.length < maxSubtasks
-      throw new Error "invalid parentTask already has too many subtasks: #{parentTask.subtasks.length}"
+    # unless !parentTask.subtasks || parentTask.subtasks.length < maxSubtasks
+      # throw new Error "invalid parentTask already has too many subtasks: #{parentTask.subtasks.length}"
 
     @setState
       [parentTaskId]: merge
@@ -57,6 +64,6 @@ class Task extends ApplicationState
         subtasks: compactFlattenAll parentTask.subtasks, newSubtaskId
       [newSubtaskId]: {}
         parentTaskId
-        text: ''
+        text: initialText
 
     newSubtaskId
