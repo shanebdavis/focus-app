@@ -26,10 +26,6 @@ Task2Factory = class Task2 extends FluxComponent
       @taskId
       newSubtaskId = @models.task.newSubtask @taskId
 
-  focusInput: ->
-    @refs?.textInput?.element?.focus() # for iOS???
-    timeout 10, @refs?.textInput?.element?.focus()
-
   preprocessState: (state) ->
     if state.task && @props.taskId != :root && !present state.task.text
       merge super, editingText: true

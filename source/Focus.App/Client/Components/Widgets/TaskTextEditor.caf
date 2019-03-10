@@ -21,12 +21,20 @@ class TaskTextEditor extends FluxComponent
         value.trim()
         .replace /[\n\s]+/g, ' '
 
+  scrollOnScreen: ->
+    @refs?.mainElement?.element?.scrollOnScreen()
+
+  # NOTE - iOS only lets focus setting while in a touch-event
+  # https://stackoverflow.com/questions/18728166/programmatically-focus-on-next-input-field-in-mobile-safari
   focusInput: ->
     @refs?.textInput?.element?.focus() # for iOS???
-    timeout 10, @refs?.textInput?.element?.focus()
+    timeout 10, -> @refs?.textInput?.element?.focus()
+    timeout 20, @scrollOnScreen
+    timeout 300, @scrollOnScreen
 
   preprocessState: (state) ->
     if state.task && @props.taskId != :root && !present state.task.text
+      @focusInput()
       merge super, editingText: true
     else
       super
@@ -46,51 +54,53 @@ class TaskTextEditor extends FluxComponent
       :textCenterCenter
 
     Element
-      :parentWidthChildrenHeight if tight
-      if @editingText
-        Element
-          on:
-            blur: ->
-              unless present text
-                @models.task.clearUnusedSubtasks()
-              @clearEditingText()
-            pointerClick: @focusInput
+      # draw: :red
+      key: :mainElement
+      on: unless @depth
+        pointerClick: ->
+          @triggerEditingText()
+          @focusInput()
 
-          :textCursor
+      Element
+        opacity: if @editingText then 1 else .01
+        on:
+          blur: ->
+            unless present text
+              @models.task.clearUnusedSubtasks()
+            @clearEditingText()
+          pointerClick: @focusInput
+
+        :textCursor
+        padding: gridSize * 2
+        TextInputElement
+          commonTextProps
+
+          size:
+            ww:   1
+            hch:  1
+            max:  hh: 1
           :parentWidthChildrenHeight if tight
-          padding: gridSize * 2
-          TextInputElement
-            commonTextProps
-            size:
-              ww:   1
-              hch:  1
-              max:  hh: 1
-            :parentWidthChildrenHeight if tight
-            :centerCenter unless tight
-            key:        :textInput
-            maxLength:  60
-            padding:    0
-            captureWheelEvents: true
-            type:   :textarea
-            placeholder:
-              if @taskId == :root
-                "#1 goal"
-              else
-                "sub-goal"
-            value:  text
-            on: {}
-              enter: @clearEditingText
-              @valueChanged
-              domElementAttached: ({target}) ->
-                log :focus
-                target.focus()
+          :centerCenter
+          key:        :textInput
+          maxLength:  60
+          padding:    0
+          captureWheelEvents: true
+          type:   :textarea
+          placeholder:
+            if @taskId == :root
+              "#1 goal"
+            else
+              "sub-goal"
+          value:  text
+          on: {}
+            focus: @triggerEditingText
+            enter: @clearEditingText
+            @valueChanged
+            domElementAttached: @focusInput
 
-      else
+      unless @editingText
         TextElement
           commonTextProps
           :textCursor
-          :parentSize unless tight
+          :parentSize
           text: text
-          on: pointerClick: ->
-            @triggerEditingText()
-            timeout 10 @focusInput

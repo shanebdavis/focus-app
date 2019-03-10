@@ -22,7 +22,15 @@ class JustTask extends FluxComponent
       text
 
     Element
-      :parentWidthChildrenHeight
+      size: size =
+        ww: 1
+        h: gridSize *
+          if taskId
+            switch depth
+            when 1 then 18
+            else 12
+          else 4
+
       draw:
         radius:     5
         color:      :white
@@ -34,12 +42,8 @@ class JustTask extends FluxComponent
         on: pointerClick: @select
         opacity: .5
 
-
       Element
-        :parentWidthChildrenHeight
-
-        padding: v: gridSize *
-          5 * min 1, 1 - depth / 4
+        {} size
 
         if @task
           &TaskTextEditor {} taskId, depth, tight: true
@@ -47,7 +51,7 @@ class JustTask extends FluxComponent
         else if !taskId
           TextElement
             TextStyles.largeBoldText
-            :parentWidthChildrenHeight
+            :parentSize
             :textCenterCenter
             text: :+
             color: AppPalette.primary

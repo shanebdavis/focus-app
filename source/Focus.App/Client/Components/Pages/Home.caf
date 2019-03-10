@@ -10,24 +10,29 @@ class Home extends FluxComponent
     Element
       draw: AppPalette.green
       padding: @appKitViewState.safePadding
-      ScrollElement
-        :topCenter
-        :column
-        childrenMargins: gridSize
-        size: w: phoneWidth
-        padding: gridSize
-        # array taskId, i in @taskNavStack
-        #   Element
-        #     key: i
-        #     :parentWidthSquare
-        #     Task {}
-        #       key: taskId
-        #       taskId
-        #       depth: i + 1
-        Task2 taskId: :root depth: 1
-        Element
-          key: @taskNavStack.length
-          :parentWidthSquare
+      Element
+        padding: v: gridSize
+
+        ScrollElement
+          Element
+            :topCenter
+            :column
+            childrenMargins: gridSize
+            size:
+              w: phoneWidth - gridSize * 2
+              hch: 1
+            # array taskId, i in @taskNavStack
+            #   Element
+            #     key: i
+            #     :parentWidthSquare
+            #     Task {}
+            #       key: taskId
+            #       taskId
+            #       depth: i + 1
+            Task2 taskId: :root depth: 1
+            # Element
+            #   key: @taskNavStack.length
+            #   :parentWidthSquare
 
       TextElement
         TextStyles.tinyText
