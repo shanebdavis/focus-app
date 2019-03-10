@@ -59,9 +59,9 @@ SubtasksFactory = class Subtasks extends FluxComponent
                 :centerLeft
               else
                 :centerCenter
-              draw:
-                :circle
-                TextPalette.white.primary
+              # draw:
+                # :circle
+                # TextPalette.white.primary
               padding: gridSize * .67
               :pointerCursor
               Element
@@ -80,7 +80,7 @@ SubtasksFactory = class Subtasks extends FluxComponent
                     context.lineTo  left,     bottom * .25
                     context.closePath()
 
-                  fill: AppPalette.green
+                  fill: AppPalette.primary
 
             if @showAllChildren
               Element
@@ -97,7 +97,7 @@ SubtasksFactory = class Subtasks extends FluxComponent
                   :parentSize
                   :textCenterCenter
                   text: :+
-                  color: AppPalette.green
+                  color: AppPalette.primary
 
 
           Element
@@ -120,7 +120,7 @@ SubtasksFactory = class Subtasks extends FluxComponent
                 order:  order + 1
                 selected: taskId == selectedSubtaskId
                 select: @setSelectedSubtaskId
-                showDelete: @showAllChildren
+                showOptions: @showAllChildren
                 path: compactFlattenAll
                   path ? 1
                   order + 1

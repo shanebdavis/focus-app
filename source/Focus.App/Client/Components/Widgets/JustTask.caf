@@ -5,8 +5,8 @@ class JustTask extends FluxComponent
     :appKitViewState.gridSize
     :task
 
-  delete: ->
-    @models.task.removeTask @props.taskId
+  delete:  -> @models.task.removeTask  @props.taskId
+  promote: -> @models.task.promoteTask @props.taskId
 
   render: ->
     @ extract gridSize
@@ -51,7 +51,7 @@ class JustTask extends FluxComponent
         on: pointerClick: -> @props.select? taskId
         color:
           if selected
-            AppPalette.green
+            AppPalette.primary
           else
             AppPalette.grey
         padding: gridSize
@@ -62,18 +62,35 @@ class JustTask extends FluxComponent
             "" #{order}
         inFlow: false
 
-      if @props.showDelete
-        TextElement
-          TextStyles.mediumBoldText
-          :childrenSize
-          :pointerCursor
+      if @props.showOptions
+        Element
+          :row
           :topRight
-          key: :deleteButton
-          animators:
-            :fontSize
-            :color
-          on: pointerClick: @delete
-          color: AppPalette.grey
-          padding: gridSize
-          text: "x"
-          inFlow: false
+          :childrenSize
+          TextElement
+            TextStyles.mediumBoldText
+            :childrenSize
+            :pointerCursor
+            key: :promoteButton
+            layoutMode: :tight
+            animators:
+              :fontSize
+              :color
+            on: pointerClick: @promote
+            color: AppPalette.primary
+            padding: gridSize
+            text: "^"
+
+          TextElement
+            TextStyles.mediumBoldText
+            :childrenSize
+            :pointerCursor
+            key: :deleteButton
+            animators:
+              :fontSize
+              :color
+            on: pointerClick: @delete
+            color: AppPalette.primary
+            padding: gridSize
+            text: "x"
+            layoutMode: :tight

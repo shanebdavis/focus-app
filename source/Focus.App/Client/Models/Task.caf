@@ -48,6 +48,35 @@ class Task extends ApplicationState
         parentTaskId
         subtasks: arrayWithoutValue @state[parentTaskId].subtasks, id
 
+  promoteTask: (taskId) ->
+    if @state[taskId] extract? parentTaskId
+      @state[parentTaskId] extract
+        subtasks
+        parentTaskId as grandparentTaskId
+      if 0 == i = subtasks.indexOf taskId
+        if grandparentTaskId
+          @updateTask
+            grandparentTaskId
+            subtasks:
+              compactFlattenAll
+                @state[grandparentTaskId].subtasks
+                taskId
+          @updateTask
+            parentTaskId
+            subtasks: subtasks.slice 1, subtasks.length
+          @updateTask
+            taskId
+            parentTaskId: grandparentTaskId
+
+      else
+        @updateTask
+          parentTaskId
+          subtasks:
+            arrayWithElementMoved
+              subtasks
+              i
+              0
+
   newSubtask: (parentTaskId, initialText) ->
     newSubtaskId = cryptoRandomString 10
     initialText ?= ''
