@@ -13,7 +13,6 @@ SubtasksFactory = class Subtasks extends FluxComponent
 
   @setter
     showAllChildren: (v) ->
-      log "scrollit"
       if v
         timeout 250 ->
           @refs.no1Children?.element?.scrollOnScreen()

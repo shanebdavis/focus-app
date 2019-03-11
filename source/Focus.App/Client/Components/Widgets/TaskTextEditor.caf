@@ -96,7 +96,6 @@ class TaskTextEditor extends FluxComponent
             focus: @triggerEditingText
             enter: @clearEditingText
             @valueChanged
-            domElementAttached: @focusInput
 
       unless @editingText
         TextElement
