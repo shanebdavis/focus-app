@@ -42,7 +42,7 @@ SubtasksFactory = class Subtasks extends FluxComponent
   newSubtask: ->
     @models.taskNavState.showSubtask
       @taskId
-      @selectedSubtaskId = @models.task.newSubtask @taskId
+      @models.task.newSubtask @taskId
 
   selectOrAddTask: (taskId) ->
     if taskId
