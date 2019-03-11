@@ -58,22 +58,6 @@ class Task extends FluxComponent
           cancel: (e) ->
             @axisXOffset = 0
 
-  updateTask: (mergeInTaskProps) ->
-    @models.task.updateTask
-      @taskId
-      mergeInTaskProps
-
-  valueChanged: ({props:{value}}) ->
-    @updateTask
-      text:
-        value.trim()
-        .replace /[\n\s]+/g, ' '
-
-  newSubtask: ->
-    @models.taskNavState.showSubtask
-      @taskId
-      newSubtaskId = @models.task.newSubtask @taskId
-
   focusInput: ->
     @refs?.textInput?.element?.focus() # for iOS???
     timeout 10, @refs?.textInput?.element?.focus()

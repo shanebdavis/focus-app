@@ -13,13 +13,17 @@ class JustTask extends FluxComponent
   render: ->
     @ extract gridSize
     @props extract
-      order = 1
+      order
       depth
       taskId
       selected
       path
+      count
     @task extract?
       text
+
+    count ?= order
+    count = max count, order
 
     Element
       size: size =
@@ -56,29 +60,32 @@ class JustTask extends FluxComponent
             text: :+
             color: AppPalette.primary
 
-      TextElement
-        if selected
-          TextStyles.largeBoldItalicText
-        else
-          TextStyles.mediumBoldText
-        :childrenSize
-        :pointerCursor
-        animators:
-          :fontSize
-          :color
-        on: pointerClick: @select
-        color:
+      if order && count > 1
+        labelColor =
           if selected
             AppPalette.primary
           else
             AppPalette.grey
-        padding: gridSize
-        text:
-          if path
-            path.join '.'
-          else
-            "" #{order}
-        inFlow: false
+        Element
+          :row
+          :childrenSize
+          :pointerCursor
+          on: pointerClick: @select
+          padding:  gridSize
+          inFlow: false
+
+          TextElement
+            TextStyles.largeBoldItalicText
+            :childrenSize
+            animators: :color
+            color:    labelColor
+            text:   "" #{order}
+          TextElement
+            TextStyles.smallBoldItalicText
+            :childrenSize
+            animators: :color
+            color:    labelColor
+            text:   "" /#{count}
 
       if @props.showOptions && taskId
         Element

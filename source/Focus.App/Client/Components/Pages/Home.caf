@@ -21,18 +21,7 @@ class Home extends FluxComponent
             size:
               w: phoneWidth - gridSize * 2
               hch: 1
-            # array taskId, i in @taskNavStack
-            #   Element
-            #     key: i
-            #     :parentWidthSquare
-            #     Task {}
-            #       key: taskId
-            #       taskId
-            #       depth: i + 1
             Task2 taskId: :root depth: 1
-            # Element
-            #   key: @taskNavStack.length
-            #   :parentWidthSquare
 
       TextElement
         TextStyles.tinyText

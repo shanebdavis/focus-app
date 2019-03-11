@@ -17,9 +17,14 @@ class TaskTextEditor extends FluxComponent
 
   valueChanged: ({props:{value}}) ->
     @updateTask
+      text: value
+
+  normalizeValue: ->
+    @updateTask
       text:
-        value.trim()
-        .replace /[\n\s]+/g, ' '
+        @task.text.trim()
+        .replace /\n\n+/g,  "" \n
+        .replace /[ \t]+/g,    ' '
 
   scrollOnScreen: ->
     @refs?.mainElement?.element?.scrollOnScreen()
@@ -28,7 +33,9 @@ class TaskTextEditor extends FluxComponent
   # https://stackoverflow.com/questions/18728166/programmatically-focus-on-next-input-field-in-mobile-safari
   focusInput: ->
     @refs?.textInput?.element?.focus() # for iOS???
-    timeout 10, -> @refs?.textInput?.element?.focus()
+    timeout 10, ->
+      @refs?.textInput?.element?.moveCursorToEnd()
+      @refs?.textInput?.element?.focus()
     timeout 20, @scrollOnScreen
     timeout 300, @scrollOnScreen
 
@@ -51,6 +58,7 @@ class TaskTextEditor extends FluxComponent
       else TextStyles.largeLightText
       padding:  gridSize * 2
       color:    TextPalette.black.primary
+      maxLines: 3
       :textCenterCenter
 
     Element
@@ -62,7 +70,9 @@ class TaskTextEditor extends FluxComponent
           @focusInput()
 
       Element
-        opacity: if @editingText then 1 else .01
+        :clip
+        :centerCenter
+        size: if @editingText then :parentSize else 0
         on:
           blur: ->
             unless present text
@@ -93,8 +103,9 @@ class TaskTextEditor extends FluxComponent
               "sub-goal"
           value:  text
           on: {}
-            focus: @triggerEditingText
-            enter: @clearEditingText
+            focus:  @triggerEditingText
+            blur:   @normalizeValue
+            # enter:  @clearEditingText
             @valueChanged
 
       unless @editingText

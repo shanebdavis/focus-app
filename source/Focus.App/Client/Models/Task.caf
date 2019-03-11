@@ -14,7 +14,10 @@ class Task extends ApplicationState
   updateTask: (id, props) ->
     @setState
       id
-      merge @state[id], props
+      merge
+        @state[id]
+        props
+        updatedAt: toSeconds() | 0
 
   addTestDataChildren: (parentId, depth) ->
     depth ?= 2
@@ -94,5 +97,7 @@ class Task extends ApplicationState
       [newSubtaskId]: {}
         parentTaskId
         text: initialText
+        createdAt: toSeconds() | 0
+        updatedAt: toSeconds() | 0
 
     newSubtaskId
