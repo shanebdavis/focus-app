@@ -9,6 +9,7 @@
   "name": "focus-app",
   "scripts": {
     "build": "echo \"Building js...\"\nwebpack\necho \"Building manifest...\"\ncaf generateManifest.caf > docs/needs.manifest\necho \"Build done.\"",
+    "deploy": "npm run build\ngit commit -a -m BUILD\ngit push",
     "start": "webpack-dev-server --hot --inline --progress",
     "test": "webpack-dev-server  --progress",
     "testInBrowser": "webpack-dev-server --progress"

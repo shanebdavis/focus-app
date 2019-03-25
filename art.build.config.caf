@@ -9,6 +9,12 @@ npm:
   description: "" Focus.App
   dependencies: art-suite-clientApp: :git://github.com/imikimi/art-suite-clientApp
   scripts:
+    deploy:
+      """
+        npm run build
+        git commit -a -m BUILD
+        git push
+
     build:
       """
         echo "Building js..."
