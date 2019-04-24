@@ -54,14 +54,14 @@ class TaskTextEditor extends FluxComponent
     commonTextProps =
       switch @props.depth
       when 1 then TextStyles.xxLargeLightText
-      when 2 then TextStyles.xLargeLightText
-      else TextStyles.largeLightText
-      padding:  gridSize * 2
+      # when 2 then TextStyles.xLargeText
+      else TextStyles.mediumText
+      padding:  gridSize
       color:    TextPalette.black.primary
       maxLines: 3
-      :textCenterCenter
 
     Element
+      :parentWidthChildrenHeight
       # draw: :red
       key: :mainElement
       on: unless @depth
@@ -71,8 +71,7 @@ class TaskTextEditor extends FluxComponent
 
       Element
         :clip
-        :centerCenter
-        size: if @editingText then :parentSize else 0
+        size: if @editingText then :parentWidthChildrenHeight else 0
         on:
           blur: ->
             unless present text
@@ -81,19 +80,11 @@ class TaskTextEditor extends FluxComponent
           pointerClick: @focusInput
 
         :textCursor
-        padding: gridSize * 2
         TextInputElement
           commonTextProps
-
-          size:
-            ww:   1
-            hch:  1
-            max:  hh: 1
-          :parentWidthChildrenHeight if tight
-          :centerCenter
+          :parentWidthChildrenHeight
           key:        :textInput
           maxLength:  60
-          padding:    0
           captureWheelEvents: true
           type:   :textarea
           placeholder:
@@ -112,5 +103,5 @@ class TaskTextEditor extends FluxComponent
         TextElement
           commonTextProps
           :textCursor
-          :parentSize
+          :parentWidthChildrenHeight
           text: text
